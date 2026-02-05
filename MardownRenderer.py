@@ -20,7 +20,7 @@ class MarkdownText(ctk.CTkTextbox):
             'pady': 15,
             'fg_color': '#ffffff',
             'text_color': '#333333',
-            'font': ('Segoe UI', 11),
+            'font': ('Segoe UI', 12),
             'spacing1': 2,
             'spacing2': 2,
             'spacing3': 5,
@@ -46,7 +46,7 @@ class MarkdownText(ctk.CTkTextbox):
         """Configura as tags de formatação"""
         # Fontes
         base_font = tkfont.Font(font=self._textbox.cget('font'))
-        base_size = int(base_font.cget('size'))+3
+        base_size = int(base_font.cget('size'))
         base_family = base_font.cget('family')
         
         # Cabeçalhos
@@ -490,7 +490,7 @@ class MarkdownRenderer(MarkdownText):
         sample = '''# 🎉 Renderizador Markdown para Tkinter
 
 Este é um **componente nativo** para visualizar *Markdown* em tempo real!
-
+---
 ## ✨ Formatação de Texto
 
 - **Texto em negrito** usando `**texto**`
