@@ -4,30 +4,39 @@ Usa tk.Text com tags customizadas para melhor controle e renderização
 """
 
 import tkinter as tk
-from tkinter import ttk, scrolledtext
+import tkinter.font as tkfont
+import customtkinter as ctk
 import re
 
 
-class MarkdownText(tk.Text):
+class MarkdownText(ctk.CTkTextbox):
     """Widget Text com suporte nativo a Markdown"""
     
     def __init__(self, master, **kwargs):
         # Configurações padrão
         defaults = {
-            'wrap': tk.WORD,
+            'wrap': 'word',
             'padx': 15,
             'pady': 15,
-            'bg': '#ffffff',
-            'fg': '#333333',
+            'fg_color': '#ffffff',
+            'text_color': '#333333',
             'font': ('Segoe UI', 11),
             'spacing1': 2,
             'spacing2': 2,
             'spacing3': 5,
             'state': 'disabled',
             'cursor': 'arrow',
-            'relief': 'flat',
-            'borderwidth': 0,
+            'corner_radius': 0,
+            'border_width': 0,
+            'activate_scrollbars': True
         }
+        
+        if 'bg' in kwargs: kwargs['fg_color'] = kwargs.pop('bg')
+        if 'fg' in kwargs: kwargs['text_color'] = kwargs.pop('fg')
+        if 'borderwidth' in kwargs: kwargs['border_width'] = kwargs.pop('borderwidth')
+        if 'relief' in kwargs: kwargs.pop('relief')
+        if 'yscrollcommand' in kwargs: kwargs.pop('yscrollcommand')
+
         defaults.update(kwargs)
         super().__init__(master, **defaults)
         
@@ -36,39 +45,41 @@ class MarkdownText(tk.Text):
     def _setup_tags(self):
         """Configura as tags de formatação"""
         # Fontes
-        base_size = 11
+        base_font = tkfont.Font(font=self._textbox.cget('font'))
+        base_size = int(base_font.cget('size'))+3
+        base_family = base_font.cget('family')
         
         # Cabeçalhos
-        self.tag_configure('h1', font=('Segoe UI', base_size + 12, 'bold'), 
+        self._textbox.tag_config('h1', font=('Segoe UI', base_size + 12, 'bold'), 
                           foreground='#1a1a2e', spacing1=20, spacing3=10)
-        self.tag_configure('h2', font=('Segoe UI', base_size + 8, 'bold'), 
+        self._textbox.tag_config('h2', font=('Segoe UI', base_size + 8, 'bold'), 
                           foreground='#16213e', spacing1=18, spacing3=8)
-        self.tag_configure('h3', font=('Segoe UI', base_size + 5, 'bold'), 
+        self._textbox.tag_config('h3', font=('Segoe UI', base_size + 5, 'bold'), 
                           foreground='#1f4068', spacing1=15, spacing3=6)
-        self.tag_configure('h4', font=('Segoe UI', base_size + 3, 'bold'), 
+        self._textbox.tag_config('h4', font=('Segoe UI', base_size + 3, 'bold'), 
                           foreground='#1b1b2f', spacing1=12, spacing3=5)
-        self.tag_configure('h5', font=('Segoe UI', base_size + 2, 'bold'), 
+        self._textbox.tag_config('h5', font=('Segoe UI', base_size + 2, 'bold'), 
                           foreground='#464866', spacing1=10, spacing3=4)
-        self.tag_configure('h6', font=('Segoe UI', base_size + 1, 'bold'), 
+        self._textbox.tag_config('h6', font=('Segoe UI', base_size + 1, 'bold'), 
                           foreground='#6b778d', spacing1=8, spacing3=3)
         
         # Formatação de texto
-        self.tag_configure('bold', font=('Segoe UI', base_size, 'bold'))
-        self.tag_configure('italic', font=('Segoe UI', base_size, 'italic'))
-        self.tag_configure('bold_italic', font=('Segoe UI', base_size, 'bold italic'))
-        self.tag_configure('strikethrough', overstrike=True, foreground='#888888')
-        self.tag_configure('underline', underline=True)
+        self._textbox.tag_config('bold', font=(base_family, base_size, 'bold'))
+        self._textbox.tag_config('italic', font=(base_family, base_size, 'italic'))
+        self._textbox.tag_config('bold_italic', font=(base_family, base_size, 'bold italic'))
+        self._textbox.tag_config('strikethrough', overstrike=True, foreground='#888888')
+        self._textbox.tag_config('underline', underline=True)
         
         # Código inline
-        self.tag_configure('code_inline', 
-                          font=('Consolas', base_size), 
+        self._textbox.tag_config('code_inline', 
+                  font=('Consolas', base_size), 
                           background='#f0f0f0',
                           foreground='#d63384',
                           spacing1=2)
         
         # Bloco de código
-        self.tag_configure('code_block', 
-                          font=('Consolas', base_size - 1),
+        self._textbox.tag_config('code_block', 
+                  font=('Consolas', base_size),
                           background='#1e1e1e',
                           foreground='#d4d4d4',
                           spacing1=10,
@@ -78,17 +89,17 @@ class MarkdownText(tk.Text):
                           rmargin=20)
         
         # Syntax highlighting para código
-        self.tag_configure('code_keyword', foreground='#569cd6', font=('Consolas', base_size - 1))
-        self.tag_configure('code_string', foreground='#ce9178', font=('Consolas', base_size - 1))
-        self.tag_configure('code_comment', foreground='#6a9955', font=('Consolas', base_size - 1))
-        self.tag_configure('code_number', foreground='#b5cea8', font=('Consolas', base_size - 1))
-        self.tag_configure('code_function', foreground='#dcdcaa', font=('Consolas', base_size - 1))
-        self.tag_configure('code_class', foreground='#4ec9b0', font=('Consolas', base_size - 1))
-        self.tag_configure('code_decorator', foreground='#c586c0', font=('Consolas', base_size - 1))
-        self.tag_configure('code_operator', foreground='#d4d4d4', font=('Consolas', base_size - 1))
+        self._textbox.tag_config('code_keyword', foreground='#569cd6', font=('Consolas', base_size - 1))
+        self._textbox.tag_config('code_string', foreground='#ce9178', font=('Consolas', base_size - 1))
+        self._textbox.tag_config('code_comment', foreground='#6a9955', font=('Consolas', base_size - 1))
+        self._textbox.tag_config('code_number', foreground='#b5cea8', font=('Consolas', base_size - 1))
+        self._textbox.tag_config('code_function', foreground='#dcdcaa', font=('Consolas', base_size - 1))
+        self._textbox.tag_config('code_class', foreground='#4ec9b0', font=('Consolas', base_size - 1))
+        self._textbox.tag_config('code_decorator', foreground='#c586c0', font=('Consolas', base_size - 1))
+        self._textbox.tag_config('code_operator', foreground='#d4d4d4', font=('Consolas', base_size - 1))
         
         # Citação
-        self.tag_configure('blockquote', 
+        self._textbox.tag_config('blockquote', 
                           font=('Segoe UI', base_size, 'italic'),
                           foreground='#6c757d',
                           background='#f8f9fa',
@@ -99,36 +110,36 @@ class MarkdownText(tk.Text):
                           borderwidth=3)
         
         # Links
-        self.tag_configure('link', foreground='#0d6efd', underline=True)
-        self.tag_bind('link', '<Enter>', lambda e: self.config(cursor='hand2'))
-        self.tag_bind('link', '<Leave>', lambda e: self.config(cursor='arrow'))
+        self._textbox.tag_config('link', foreground='#0d6efd', underline=True)
+        self._textbox.tag_bind('link', '<Enter>', lambda e: self.configure(cursor='hand2'))
+        self._textbox.tag_bind('link', '<Leave>', lambda e: self.configure(cursor='arrow'))
         
         # Listas
-        self.tag_configure('list_item', lmargin1=25, lmargin2=40)
-        self.tag_configure('list_bullet', foreground='#6c757d')
-        self.tag_configure('list_number', foreground='#0d6efd', font=('Segoe UI', base_size, 'bold'))
+        self._textbox.tag_config('list_item', lmargin1=25, lmargin2=40)
+        self._textbox.tag_config('list_bullet', foreground='#6c757d')
+        self._textbox.tag_config('list_number', foreground='#0d6efd', font=('Segoe UI', base_size, 'bold'))
         
         # Linha horizontal
-        self.tag_configure('hr', font=('Segoe UI', 4), foreground='#dee2e6', 
+        self._textbox.tag_config('hr', font=('Segoe UI', 4), foreground='#dee2e6', 
                           spacing1=15, spacing3=15, justify='center')
         
         # Tabela
-        self.tag_configure('table_border', font=('Consolas', base_size),
+        self._textbox.tag_config('table_border', font=('Consolas', base_size),
                           foreground='#6c757d')
-        self.tag_configure('table_header', font=('Consolas', base_size, 'bold'),
+        self._textbox.tag_config('table_header', font=('Consolas', base_size, 'bold'),
                           background='#e9ecef', foreground='#212529')
-        self.tag_configure('table_cell', font=('Consolas', base_size),
+        self._textbox.tag_config('table_cell', font=('Consolas', base_size),
                           background='#ffffff')
-        self.tag_configure('table_row_alt', font=('Consolas', base_size),
+        self._textbox.tag_config('table_row_alt', font=('Consolas', base_size),
                           background='#f8f9fa')
         
         # Checkbox
-        self.tag_configure('checkbox_done', foreground='#198754')
-        self.tag_configure('checkbox_pending', foreground='#dc3545')
+        self._textbox.tag_config('checkbox_done', foreground='#198754')
+        self._textbox.tag_config('checkbox_pending', foreground='#dc3545')
 
 
-class MarkdownRenderer(tk.Frame):
-    """Componente completo para edição e visualização de Markdown"""
+class MarkdownRenderer(MarkdownText):
+    """Widget CTkTextbox com renderização de Markdown"""
     
     # Palavras-chave para syntax highlighting
     PYTHON_KEYWORDS = {
@@ -149,101 +160,18 @@ class MarkdownRenderer(tk.Frame):
         'log', 'true', 'false', 'null', 'undefined'
     }
     
-    def __init__(self, master, show_editor=True, **kwargs):
+    def __init__(self, master, markdown_text="", **kwargs):
         super().__init__(master, **kwargs)
-        self.configure(bg='#f5f5f5')
-        self.show_editor = show_editor
-        self._setup_ui()
+        self._render_markdown(markdown_text)
     
-    def _setup_ui(self):
-        """Configura a interface"""
-        if self.show_editor:
-            # PanedWindow para divisão editor/preview
-            self.paned = ttk.PanedWindow(self, orient=tk.HORIZONTAL)
-            self.paned.pack(fill=tk.BOTH, expand=True)
-            
-            # Frame do Editor
-            editor_frame = ttk.Frame(self.paned)
-            self.paned.add(editor_frame, weight=1)
-            
-            # Label do editor
-            editor_label = tk.Label(editor_frame, text="📝 Editor Markdown", 
-                                   font=('Segoe UI', 10, 'bold'),
-                                   bg='#2d2d2d', fg='white', pady=8)
-            editor_label.pack(fill=tk.X)
-            
-            # Editor de texto
-            self.editor = scrolledtext.ScrolledText(
-                editor_frame,
-                wrap=tk.WORD,
-                font=('Consolas', 11),
-                bg='#1e1e1e',
-                fg='#d4d4d4',
-                insertbackground='#ffffff',
-                selectbackground='#264f78',
-                padx=15,
-                pady=15,
-                undo=True,
-                relief='flat'
-            )
-            self.editor.pack(fill=tk.BOTH, expand=True)
-            
-            # Frame do Preview
-            preview_frame = ttk.Frame(self.paned)
-            self.paned.add(preview_frame, weight=1)
-            
-            # Label do preview
-            preview_label = tk.Label(preview_frame, text="👁️ Preview", 
-                                    font=('Segoe UI', 10, 'bold'),
-                                    bg='#0d6efd', fg='white', pady=8)
-            preview_label.pack(fill=tk.X)
-            
-            # Preview com scroll
-            preview_container = tk.Frame(preview_frame)
-            preview_container.pack(fill=tk.BOTH, expand=True)
-            
-            scrollbar = ttk.Scrollbar(preview_container)
-            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-            
-            self.preview = MarkdownText(preview_container, yscrollcommand=scrollbar.set)
-            self.preview.pack(fill=tk.BOTH, expand=True)
-            scrollbar.config(command=self.preview.yview)
-            
-            # Bindings
-            self.editor.bind('<KeyRelease>', lambda e: self.after(100, self.render))
-            
-            # Inserir exemplo
-            self._insert_sample()
-        else:
-            # Somente preview
-            scrollbar = ttk.Scrollbar(self)
-            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-            
-            self.preview = MarkdownText(self, yscrollcommand=scrollbar.set)
-            self.preview.pack(fill=tk.BOTH, expand=True)
-            scrollbar.config(command=self.preview.yview)
-            self._insert_sample()
-    
-    def render(self):
-        """Renderiza o Markdown"""
-        if self.show_editor:
-            text = self.editor.get("1.0", tk.END)
-        else:
-            return
-        
-        self._render_markdown(text)
-    
-    def set_markdown(self, text: str):
-        """Define o texto Markdown"""
-        if self.show_editor:
-            self.editor.delete("1.0", tk.END)
-            self.editor.insert("1.0", text)
-        self._render_markdown(text)
+    def set_markdown(self, markdown_text: str):
+        """Define o texto Markdown a ser renderizado"""
+        self._render_markdown(markdown_text)
     
     def _render_markdown(self, text: str):
         """Processa e renderiza o Markdown"""
-        self.preview.config(state='normal')
-        self.preview.delete("1.0", tk.END)
+        self.configure(state='normal')
+        self.delete("0.0", "end")
         
         lines = text.split('\n')
         i = 0
@@ -275,7 +203,7 @@ class MarkdownRenderer(tk.Frame):
             
             # Linha horizontal
             if re.match(r'^(-{3,}|\*{3,}|_{3,})\s*$', line.strip()):
-                self.preview.insert(tk.END, '─' * 60 + '\n', 'hr')
+                self.insert(tk.END, '─' * 60 + '\n', 'hr')
                 i += 1
                 continue
             
@@ -285,7 +213,7 @@ class MarkdownRenderer(tk.Frame):
                 level = len(header_match.group(1))
                 content = header_match.group(2)
                 self._insert_formatted_text(content, f'h{level}')
-                self.preview.insert(tk.END, '\n')
+                self.insert(tk.END, '\n')
                 i += 1
                 continue
             
@@ -296,9 +224,9 @@ class MarkdownRenderer(tk.Frame):
                     quote_lines.append(lines[i].strip()[1:].strip())
                     i += 1
                 quote_text = ' '.join(quote_lines)
-                self.preview.insert(tk.END, '┃ ', 'blockquote')
+                self.insert(tk.END, '┃ ', 'blockquote')
                 self._insert_formatted_text(quote_text, 'blockquote')
-                self.preview.insert(tk.END, '\n\n')
+                self.insert(tk.END, '\n\n')
                 continue
             
             # Lista não ordenada
@@ -314,13 +242,13 @@ class MarkdownRenderer(tk.Frame):
                     text_content = checkbox_match.group(2)
                     checkbox = '☑' if checked else '☐'
                     tag = 'checkbox_done' if checked else 'checkbox_pending'
-                    self.preview.insert(tk.END, '  ' * indent + checkbox + ' ', tag)
+                    self.insert(tk.END, '  ' * indent + checkbox + ' ', tag)
                     self._insert_formatted_text(text_content, 'list_item')
                 else:
-                    self.preview.insert(tk.END, '  ' * indent + '• ', 'list_bullet')
+                    self.insert(tk.END, '  ' * indent + '• ', 'list_bullet')
                     self._insert_formatted_text(content, 'list_item')
                 
-                self.preview.insert(tk.END, '\n')
+                self.insert(tk.END, '\n')
                 i += 1
                 continue
             
@@ -330,9 +258,9 @@ class MarkdownRenderer(tk.Frame):
                 indent = len(ordered_match.group(1)) // 2
                 num = ordered_match.group(2)
                 content = ordered_match.group(3)
-                self.preview.insert(tk.END, '  ' * indent + f'{num}. ', 'list_number')
+                self.insert(tk.END, '  ' * indent + f'{num}. ', 'list_number')
                 self._insert_formatted_text(content, 'list_item')
-                self.preview.insert(tk.END, '\n')
+                self.insert(tk.END, '\n')
                 i += 1
                 continue
             
@@ -348,89 +276,80 @@ class MarkdownRenderer(tk.Frame):
             # Parágrafo normal
             if line.strip():
                 self._insert_formatted_text(line)
-                self.preview.insert(tk.END, '\n')
+                self.insert(tk.END, '\n')
             else:
-                self.preview.insert(tk.END, '\n')
+                self.insert(tk.END, '\n')
             
             i += 1
-        
-        self.preview.config(state='disabled')
+
+        self.configure(state='disabled')
     
     def _insert_formatted_text(self, text: str, base_tag: str = None):
         """Insere texto com formatação inline"""
-        # Padrões de formatação
-        patterns = [
-            (r'\*\*\*(.+?)\*\*\*', 'bold_italic'),      # ***texto***
-            (r'___(.+?)___', 'bold_italic'),            # ___texto___
-            (r'\*\*(.+?)\*\*', 'bold'),                 # **texto**
-            (r'__(.+?)__', 'bold'),                     # __texto__
-            (r'\*(.+?)\*', 'italic'),                   # *texto*
-            (r'_(.+?)_', 'italic'),                     # _texto_
-            (r'~~(.+?)~~', 'strikethrough'),            # ~~texto~~
-            (r'`([^`]+)`', 'code_inline'),              # `código`
-            (r'\[([^\]]+)\]\(([^)]+)\)', 'link'),       # [texto](url)
-        ]
-        
-        # Encontrar todas as formatações
-        segments = []
+        pattern = re.compile(
+            r'(?P<bold_italic>\*\*\*(?P<bold_italic_text>.+?)\*\*\*|___(?P<bold_italic_text2>.+?)___)'
+            r'|(?P<bold>\*\*(?P<bold_text>.+?)\*\*|__(?P<bold_text2>.+?)__)'
+            r'|(?P<italic>\*(?P<italic_text>.+?)\*|_(?P<italic_text2>.+?)_)'
+            r'|(?P<strike>~~(?P<strike_text>.+?)~~)'
+            r'|(?P<code>`(?P<code_text>[^`]+)`)' 
+            r'|(?P<link>\[(?P<link_text>[^\]]+)\]\((?P<link_url>[^)]+)\))'
+        )
+
         last_end = 0
-        
-        # Combinar todos os padrões e ordenar por posição
-        all_matches = []
-        for pattern, tag in patterns:
-            for match in re.finditer(pattern, text):
-                all_matches.append((match.start(), match.end(), match, tag))
-        
-        all_matches.sort(key=lambda x: x[0])
-        
-        # Remover sobreposições
-        filtered_matches = []
-        last_match_end = 0
-        for start, end, match, tag in all_matches:
-            if start >= last_match_end:
-                filtered_matches.append((start, end, match, tag))
-                last_match_end = end
-        
-        # Processar segmentos
-        last_end = 0
-        for start, end, match, tag in filtered_matches:
+        for match in pattern.finditer(text):
+            start, end = match.span()
             # Texto antes da formatação
             if start > last_end:
                 plain_text = text[last_end:start]
                 if base_tag:
-                    self.preview.insert(tk.END, plain_text, base_tag)
+                    self.insert(tk.END, plain_text, base_tag)
                 else:
-                    self.preview.insert(tk.END, plain_text)
-            
-            # Texto formatado
-            if tag == 'link':
-                link_text = match.group(1)
-                # link_url = match.group(2)  # Pode ser usado para abrir links
+                    self.insert(tk.END, plain_text)
+
+            if match.group('bold_italic'):
+                content = match.group('bold_italic_text') or match.group('bold_italic_text2')
+                tags = ('bold_italic', base_tag) if base_tag else ('bold_italic',)
+                self.insert(tk.END, content, tags)
+            elif match.group('bold'):
+                content = match.group('bold_text') or match.group('bold_text2')
+                tags = ('bold', base_tag) if base_tag else ('bold',)
+                self.insert(tk.END, content, tags)
+            elif match.group('italic'):
+                content = match.group('italic_text') or match.group('italic_text2')
+                tags = ('italic', base_tag) if base_tag else ('italic',)
+                self.insert(tk.END, content, tags)
+            elif match.group('strike'):
+                content = match.group('strike_text')
+                tags = ('strikethrough', base_tag) if base_tag else ('strikethrough',)
+                self.insert(tk.END, content, tags)
+            elif match.group('code'):
+                content = match.group('code_text')
+                tags = ('code_inline', base_tag) if base_tag else ('code_inline',)
+                self.insert(tk.END, content, tags)
+            elif match.group('link'):
+                link_text = match.group('link_text')
+                # link_url = match.group('link_url')  # Pode ser usado para abrir links
                 tags = ('link', base_tag) if base_tag else ('link',)
-                self.preview.insert(tk.END, link_text, tags)
-            else:
-                content = match.group(1)
-                tags = (tag, base_tag) if base_tag else (tag,)
-                self.preview.insert(tk.END, content, tags)
-            
+                self.insert(tk.END, link_text, tags)
+
             last_end = end
         
         # Texto restante
         if last_end < len(text):
             remaining = text[last_end:]
             if base_tag:
-                self.preview.insert(tk.END, remaining, base_tag)
+                self.insert(tk.END, remaining, base_tag)
             else:
-                self.preview.insert(tk.END, remaining)
+                self.insert(tk.END, remaining)
     
     def _insert_code_block(self, code: str, language: str):
         """Insere bloco de código com syntax highlighting"""
-        self.preview.insert(tk.END, '\n')
+        self.insert(tk.END, '\n')
         
         # Cabeçalho do bloco de código
         if language:
             lang_display = language.upper()
-            self.preview.insert(tk.END, f' {lang_display} \n', 'code_block')
+            self.insert(tk.END, f' {lang_display} \n', 'code_block')
         
         # Aplicar syntax highlighting
         if language in ('python', 'py'):
@@ -438,9 +357,9 @@ class MarkdownRenderer(tk.Frame):
         elif language in ('javascript', 'js', 'typescript', 'ts'):
             self._highlight_javascript(code)
         else:
-            self.preview.insert(tk.END, code + '\n', 'code_block')
-        
-        self.preview.insert(tk.END, '\n')
+            self.insert(tk.END, code + '\n', 'code_block')
+
+        self.insert(tk.END, '\n')
     
     def _highlight_python(self, code: str):
         """Syntax highlighting para Python"""
@@ -458,7 +377,7 @@ class MarkdownRenderer(tk.Frame):
         lines = code.split('\n')
         for line in lines:
             self._highlight_line(line, patterns, self.PYTHON_KEYWORDS)
-            self.preview.insert(tk.END, '\n', 'code_block')
+            self.insert(tk.END, '\n', 'code_block')
     
     def _highlight_javascript(self, code: str):
         """Syntax highlighting para JavaScript"""
@@ -475,7 +394,7 @@ class MarkdownRenderer(tk.Frame):
         lines = code.split('\n')
         for line in lines:
             self._highlight_line(line, patterns, self.JS_KEYWORDS)
-            self.preview.insert(tk.END, '\n', 'code_block')
+            self.insert(tk.END, '\n', 'code_block')
     
     def _highlight_line(self, line: str, patterns: list, keywords: set):
         """Aplica highlighting a uma linha"""
@@ -508,12 +427,12 @@ class MarkdownRenderer(tk.Frame):
         last_pos = 0
         for start, end, tag in filtered:
             if start > last_pos:
-                self.preview.insert(tk.END, line[last_pos:start], 'code_block')
-            self.preview.insert(tk.END, line[start:end], ('code_block', tag))
+                self.insert(tk.END, line[last_pos:start], 'code_block')
+            self.insert(tk.END, line[start:end], ('code_block', tag))
             last_pos = end
         
         if last_pos < len(line):
-            self.preview.insert(tk.END, line[last_pos:], 'code_block')
+            self.insert(tk.END, line[last_pos:], 'code_block')
     
     def _insert_table(self, table_lines: list):
         """Insere uma tabela usando um widget real (Frame + Grid) para alinhamento perfeito"""
@@ -538,7 +457,7 @@ class MarkdownRenderer(tk.Frame):
 
         # Criar um container para a tabela
         # O bg aqui define a cor da "borda" entre as células
-        table_frame = tk.Frame(self.preview, bg='#bdc3c7', padx=0, pady=0)
+        table_frame = tk.Frame(self, bg='#bdc3c7', padx=0, pady=0)
         
         # Adicionar cabeçalhos
         for col, header in enumerate(headers):
@@ -562,9 +481,9 @@ class MarkdownRenderer(tk.Frame):
             table_frame.columnconfigure(col, weight=1)
 
         # Inserir o widget da tabela dentro do Text
-        self.preview.insert(tk.END, '\n')
-        self.preview.window_create(tk.END, window=table_frame)
-        self.preview.insert(tk.END, '\n')
+        self.insert(tk.END, '\n')
+        self._textbox.window_create(tk.END, window=table_frame)
+        self.insert(tk.END, '\n')
     
     def _insert_sample(self):
         """Insere texto de exemplo"""
@@ -586,6 +505,7 @@ Este é um **componente nativo** para visualizar *Markdown* em tempo real!
 - Item principal
   - Sub-item
   - Outro sub-item
+      - Sub-sub-item
 - Segundo item
 - Terceiro item
 
@@ -651,5 +571,4 @@ Visite o [Python.org](https://python.org) para mais informações!
 
 **Divirta-se escrevendo em Markdown!** 🚀
 '''
-        self.set_markdown(sample)
-        self.render()
+        self._render_markdown(sample)

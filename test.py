@@ -1,6 +1,6 @@
 from MardownRenderer import MarkdownRenderer
+import customtkinter as ctk
 import tkinter as tk
-import tkinter.ttk as ttk
 
 
 # ============================================================
@@ -9,49 +9,46 @@ import tkinter.ttk as ttk
 
 def main():
     """Função principal"""
-    root = tk.Tk()
+    root = ctk.CTk()
     root.title("📝 Markdown Editor & Viewer")
     root.geometry("1300x800")
-    root.configure(bg='#2c3e50')
-    
-    # Estilo
-    style = ttk.Style()
-    style.theme_use('clam')
-    style.configure('TFrame', background='#f5f5f5')
-    style.configure('TPanedwindow', background='#2c3e50')
+    root.configure(fg_color='#2c3e50')
     
     # Toolbar
-    toolbar = tk.Frame(root, bg='#34495e', pady=10)
+    toolbar = ctk.CTkFrame(root, fg_color='#34495e', corner_radius=0)
     toolbar.pack(fill=tk.X)
     
-    title = tk.Label(toolbar, text="🔮 Markdown Renderer", 
-                    font=('Segoe UI', 16, 'bold'),
-                    fg='white', bg='#34495e')
-    title.pack(side=tk.LEFT, padx=20)
+    title = ctk.CTkLabel(toolbar, text="🔮 Markdown Renderer",
+                         font=('Segoe UI', 16, 'bold'),
+                         text_color='white')
+    title.pack(side=tk.LEFT, padx=20, pady=10)
     
     # Botões
-    btn_frame = tk.Frame(toolbar, bg='#34495e')
+    btn_frame = ctk.CTkFrame(toolbar, fg_color='transparent')
     btn_frame.pack(side=tk.RIGHT, padx=20)
     
     def clear():
-        renderer.editor.delete("1.0", tk.END)
-        renderer.render()
+        renderer.set_markdown("")
     
     def export_md():
-        content = renderer.editor.get("1.0", tk.END)
+        content = renderer.get("0.0", tk.END)
         root.clipboard_clear()
         root.clipboard_append(content)
     
-    tk.Button(btn_frame, text="🗑️ Limpar", command=clear,
-             font=('Segoe UI', 10), bg='#e74c3c', fg='white',
-             relief='flat', padx=15, pady=5).pack(side=tk.LEFT, padx=5)
+    ctk.CTkButton(btn_frame, text="🗑️ Limpar", command=clear,
+                  font=('Segoe UI', 10), fg_color='#e74c3c',
+                  text_color='white', corner_radius=6).pack(side=tk.LEFT, padx=5)
     
-    tk.Button(btn_frame, text="📋 Copiar MD", command=export_md,
-             font=('Segoe UI', 10), bg='#27ae60', fg='white',
-             relief='flat', padx=15, pady=5).pack(side=tk.LEFT, padx=5)
+    ctk.CTkButton(btn_frame, text="📋 Copiar MD", command=export_md,
+                  font=('Segoe UI', 10), fg_color='#27ae60',
+                  text_color='white', corner_radius=6).pack(side=tk.LEFT, padx=5)
     
     # Componente principal
-    renderer = MarkdownRenderer(root, show_editor=False)
+    content_frame = ctk.CTkFrame(root, fg_color='#f5f5f5', corner_radius=8)
+    content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+    
+    renderer = MarkdownRenderer(content_frame)
+    renderer._insert_sample()
     renderer.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
     
     root.mainloop()
