@@ -1,4 +1,4 @@
-from markdownrenderer import MarkdownRenderer
+from ctk_markdown import CTkMarkdown
 import customtkinter as ctk
 import tkinter as tk
 
@@ -47,7 +47,7 @@ def main():
     content_frame = ctk.CTkFrame(root, fg_color='#f5f5f5', corner_radius=8)
     content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
     
-    renderer = MarkdownRenderer(content_frame)
+    renderer = CTkMarkdown(content_frame)
     renderer._insert_sample()
     renderer.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
     

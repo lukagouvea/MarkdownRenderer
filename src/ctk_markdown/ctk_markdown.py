@@ -8,7 +8,7 @@ import tkinter.font as tkfont
 import customtkinter as ctk
 import re
 
-class MarkdownRenderer(ctk.CTkTextbox):
+class CTkMarkdown(ctk.CTkTextbox):
     """CTkTextbox widget with Markdown rendering."""
     
     # Keywords for syntax highlighting

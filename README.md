@@ -1,14 +1,14 @@
-# markdownrenderer
+# ctk-markdown
 
 ![python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![customtkinter](https://img.shields.io/badge/customtkinter-required-1f6feb)
 ![status](https://img.shields.io/badge/status-alpha-orange)
 
-`markdownrenderer` is a **CustomTkinter** Markdown renderer based on `CTkTextbox`. It applies rich tags for headings, lists, tables, code blocks, and inline formatting.
+`ctk-markdown` is a **CustomTkinter** Markdown renderer based on `CTkTextbox`. It applies rich tags for headings, lists, tables, code blocks, and inline formatting.
 
 ## ✨ Features
 
-- Single widget (`MarkdownRenderer`) with Markdown rendering
+- Single widget (`CTkMarkdown`) with Markdown rendering
 - Headings, lists, blockquotes, tables, and code blocks
 - Basic syntax highlighting for Python and JavaScript
 - Theme-aware colors for light and dark appearance modes
@@ -16,20 +16,20 @@
 ## 📦 Installation
 
 ```bash
-pip install customtkinter
+pip install ctk-markdown
 ```
 
 ## 🚀 Usage
 
 ```python
-from markdownrenderer import MarkdownRenderer
+from ctk_markdown import CTkMarkdown
 import customtkinter as ctk
 
 app = ctk.CTk()
 frame = ctk.CTkFrame(app)
 frame.pack(fill="both", expand=True, padx=16, pady=16)
 
-renderer = MarkdownRenderer(frame)
+renderer = CTkMarkdown(frame)
 renderer.pack(fill="both", expand=True)
 renderer.set_markdown("""# Title\nText with *italic* and **bold**.""")
 
@@ -43,7 +43,7 @@ The widget inherits from `CTkTextbox`. Markdown parsing is done line by line and
 ## 🧪 Run the demo
 
 ```bash
-python test.py
+python example.py
 ```
 
 ## 🤝 Contributing
