@@ -3,6 +3,7 @@
 ![python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![customtkinter](https://img.shields.io/badge/customtkinter-required-1f6feb)
 ![status](https://img.shields.io/badge/status-alpha-orange)
+![PyPI - License](https://img.shields.io/badge/license-MIT-blue)
 
 `ctk-markdown` is a **CustomTkinter** Markdown renderer based on `CTkTextbox`. It applies rich tags for headings, lists, tables, code blocks, and inline formatting.
 
@@ -59,7 +60,3 @@ Ideas:
 - More language grammars for code highlighting
 - Image support
 - Clickable links
-
-## 📄 License
-
-Choose a license (e.g., MIT) before publishing to GitHub.
