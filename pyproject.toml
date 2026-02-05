@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "markdownrenderer"
+version = "0.1.0"
+authors = [
+  { name="Luka Gouvea", email="luka.gouvea0@gmail.com" },
+]
+description = "Markdown Renderer for customtkinter"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "customtkinter"
+]
+
+[project.urls]
+"Homepage" = "https://https://github.com/lukagouvea/MarkdownRenderer"
+"Bug Tracker" = "https://https://github.com/lukagouvea/MarkdownRenderer/issues"
